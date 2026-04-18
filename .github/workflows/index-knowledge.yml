@@ -1,0 +1,40 @@
+# .github/workflows/index-knowledge.yml
+name: Index Knowledge to Qdrant
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'wiki/**'
+      - 'approved/**'
+  workflow_dispatch:  # allow manual trigger
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout knowledge repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Clone cidadel-ai-arbiter indexer
+        run: |
+          git clone \
+            https://x-access-token:${{ secrets.GH_PAT }}@github.com/cidadel-platform/cidadel-ai-arbiter.git \
+            /tmp/arbiter
+
+      - name: Install dependencies
+        run: cd /tmp/arbiter && npm ci
+
+      - name: Run indexer
+        env:
+          KNOWLEDGE_DIR: ${{ github.workspace }}
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PRODUCT: tacticl
+        run: cd /tmp/arbiter && npx tsx scripts/index-knowledge.ts
