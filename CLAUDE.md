@@ -8,8 +8,9 @@
 The pages describe **tacticl-core**: its conventions, entities, decisions and
 gotchas (Gradle modules, Jackson 3, Firestore, PASETO auth). The design docs
 behind this vault live there too. `README.md` links the PDLC v2 SAD and the
-Knowledge Vault Design under `../tacticl-core/docs/superpowers/specs/`. On push,
-the indexer from **cidadel-ai-arbiter** loads the pages into Qdrant (see below).
+Knowledge Vault Design under `../tacticl-core/docs/superpowers/specs/`. On a push
+to `main` that touches the pages, the indexer from **cidadel-ai-arbiter** loads
+them into Qdrant (see below).
 
 ## Layout
 
@@ -56,7 +57,8 @@ name, don't exist yet. The first proposed page or run summary creates them.
 - **Frontmatter:** `tags`, `roles`, `auto-approved`, `created`, `last-updated`,
   `pipeline-run`. The seed pages use `pipeline-run: seed`.
 - **Sections, in order:** `## What`, `## Why`, `## How`, `## Example`,
-  `## Related`. Every page has all five and at least one example.
+  `## Related`. Every page must have all five and at least one example. The
+  role MOCs in `wiki/auto/moc/` don't: they use the role-guide format instead.
 - **One concept per file.** Write for an AI agent in the imperative ("do",
   "do not"), never "consider" or "may want to".
 - **Backlinks:** link a new page back from every page in its `## Related`, and
@@ -73,19 +75,21 @@ name, don't exist yet. The first proposed page or run summary creates them.
   `[[approved/gotchas/vault-https-localhost]]`. Obsidian rewrites links when it
   renames a file (`alwaysUpdateLinks`), but `git mv` doesn't, so fix inbound
   links by hand.
-- **The role MOCs hold no wikilinks right now.** Commit `d0d2f1b` rewrote
-  `wiki/auto/moc/*-guide.md` as full role guides and dropped the page links that
-  `1e7dfbd` had. Health check 5 (every page is linked from its roles' MOCs) fails
-  until those links come back.
-- **The MOC bodies are copies.** `d0d2f1b` copied them from tacticl-core's role
-  identities, and tacticl-core has changed since, so these copies can lag it.
+- **The role MOCs hold no wikilinks right now.** Commits `1ff37ee`, `cb6e64b`
+  and `d0d2f1b` rewrote `wiki/auto/moc/*-guide.md` as full role guides and
+  dropped the page links that `1e7dfbd` had. Health check 5 (every page is linked
+  from its roles' MOCs) fails until those links come back.
+- **The MOC bodies are copies.** Per its commit message, `d0d2f1b` copied them
+  from tacticl-core's `role-identities/`. Nothing in this repo keeps them in sync,
+  so they can drift from it. That rewrite also left `wiki/auto/moc/pm-guide.md`
+  with no frontmatter.
 - **RETRO_ANALYST's git flow isn't yours.** `raw/role-templates/retro-analyst-boot.md`
   has the pipeline agent run `git add .`, push `main`, and open PRs from
-  `proposed/<run>-<slug>` branches, all inside its own container clone. In this
-  checkout, follow the commit rule below.
+  `proposed/<run>-<slug>` branches, all inside its own clone at `/workspace/vault`.
+  In this checkout, follow the commit rule below.
 - **`raw/` and `approved/` are protected.** Per the boot template, never modify
   existing `raw/` content (only add run summaries), and change `approved/` pages
-  only through review. Ask the owner before you edit either.
+  only through a PR. Ask the owner before you edit either.
 - **This repo is public** and its pages are indexed. Keep secrets, tokens and
   private hostnames out of every page.
 - `docs/superpowers/` is gitignored as a local tool cache. Don't commit it.
